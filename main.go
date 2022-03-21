@@ -14,10 +14,16 @@ import (
 type Meta struct {
 	Template string
 	Project  string
-	ORM      bool
+	// The path to the package containing the stub to generate
+	PackagePath string
+	// The output path of the generated file
+	OutputPath string
+	ORM        bool
+	RpcPackage string
 
-	Rules    []RuleMeta
-	UseCases []UseCaseMeta
+	Rules       []RuleMeta
+	UseCases    []UseCaseMeta
+	RpcServices []RpcServiceMeta
 }
 
 var meta Meta
@@ -30,7 +36,9 @@ func main() {
 	os.Args = os.Args[1:]
 
 	flag.StringVar(&meta.Project, "project", "", "Go project or module name")
-	flag.BoolVar(&meta.ORM, "orm", false, "Support DB ORM ")
+	flag.StringVar(&meta.PackagePath, "pkgPath", "", "Package path containing stub to generate")
+	flag.StringVar(&meta.OutputPath, "outPath", "", "Output path that the generated files are stored")
+
 	flag.Parse()
 
 	switch command {
@@ -40,6 +48,9 @@ func main() {
 	case "usecases", "UseCases", "useCases":
 		meta.Template = usecaseTemplate
 		genUseCases()
+	case "rpc", "Rpc", "RPC":
+		meta.Template = rpcTemplate
+		genRpc()
 	}
 
 	write()

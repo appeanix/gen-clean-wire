@@ -77,7 +77,7 @@ func genUseCases() {
 			continue
 		}
 
-		// Build Rule instance and binding
+		// Build UseCase instance and binding
 		useCase := UseCaseMeta{
 			Name: usecaseName,
 		}
