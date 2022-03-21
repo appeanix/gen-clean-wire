@@ -1,4 +1,4 @@
-module gen-clean-rule-wire
+module gen-clean-wire
 
 go 1.17
 
