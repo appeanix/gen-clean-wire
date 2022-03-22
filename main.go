@@ -5,22 +5,24 @@ import (
 	"flag"
 	"fmt"
 	"html/template"
-	"log"
 	"os"
 
 	"golang.org/x/tools/go/packages"
 )
 
 type Meta struct {
-	Template string
-	Project  string
+	// User-defined flags
+	Project string
 	// The path to the package containing the stub to generate
 	PackagePath string
 	// The output path of the generated file
 	OutputPath string
-	ORM        bool
-	RpcPackage string
 
+	// non-user defined or programatic fields
+	Template    string
+	FileName    string
+	ORM         bool
+	RpcPackage  string
 	Rules       []RuleMeta
 	UseCases    []UseCaseMeta
 	RpcServices []RpcServiceMeta
@@ -44,26 +46,52 @@ func main() {
 	switch command {
 	case "rules":
 		meta.Template = ruleTemplate
+		meta.FileName = "gen_rules.go"
 		genRules()
 	case "usecases", "UseCases", "useCases":
 		meta.Template = usecaseTemplate
+		meta.FileName = "gen_usecases.go"
 		genUseCases()
 	case "rpc", "Rpc", "RPC":
 		meta.Template = rpcTemplate
+		meta.FileName = "gen_rpcs.go"
 		genRpc()
 	}
 
-	write()
-	log.Printf("%s", genBuffer.String())
+	buildTemplate()
+	writeFile()
 }
 
-func write() {
+func buildTemplate() {
 
 	var err error
-	if tmpl, err = tmpl.Parse(meta.Template); err != nil {
-		fmt.Println(err)
-	}
+	tmpl, err = tmpl.Parse(meta.Template)
+	failErr(err)
+
 	tmpl.Execute(&genBuffer, meta)
+	failErr(err)
+
+}
+
+func writeFile() {
+	var outPath string
+	if len(meta.OutputPath) > 0 {
+		outPath = meta.OutputPath
+	} else {
+		outPath = "gen"
+	}
+
+	err := os.MkdirAll(outPath, os.ModePerm)
+	failErr(err)
+
+	f, err := os.Create(fmt.Sprintf("%s/%s", outPath, meta.FileName))
+	failErr(err)
+	defer f.Close()
+
+	_, err = f.Write(genBuffer.Bytes())
+	failErr(err)
+
+	f.Sync()
 }
 
 func loadPackage(path string) *packages.Package {

@@ -13,3 +13,7 @@ type MockUseCase struct {
 	DBAdapter    interface{}
 	QueryAdapter interface{}
 }
+
+func NewMockServiceServer() {
+
+}

@@ -24,26 +24,27 @@ import (
 	rule "{{.Project}}/domain/rule"
 	handler "{{.Project}}/internal/handler"
 {{- if .ORM }}
+	. "{{.Project}}/domain"
 	dborm "{{.Project}}/internal/dborm"
 	pingorm "github.com/appeanix/pingorm"
 {{- end}}
 )
 
-{{- if .ORM }}
+{{ if .ORM }}
 func newCruder(appDB *dborm.DB, model interface{}) *dborm.Cruder {
 	return &dborm.Cruder{
 		AppDB: appDB,
 		Repo:  pingorm.Repo{Model: model},
 	}
 }
-{{- end}}
+{{ end }}
 
 
 {{ range .Rules }}
 func new{{.Name}}(appDB *dborm.DB, context *handler.AppContext) rule.{{ .Name }} {
 	return rule.{{ .Name }} {
 {{- range .Fields }}
-		{{.Field }}: {{ .Value }}
+		{{.Field }}: {{ .Value }},
 {{- end }}
 	}
 }
@@ -96,7 +97,7 @@ func genRules() {
 				entityModelType := strings.Replace(fieldName, entityAdapterSuffix, "", 1)
 				rule.Fields = append(rule.Fields, RuleFieldMeta{
 					Field: fieldName,
-					Value: fmt.Sprintf("newCruder(appDB, %s)", entityModelType),
+					Value: fmt.Sprintf("newCruder(appDB, %s{})", entityModelType),
 				})
 				meta.ORM = true
 

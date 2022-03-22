@@ -32,7 +32,7 @@ import (
 func new{{.Name}}(context *handler.AppContext) {{.Name}} {
 	return {{ .Name }} {
 {{- range .Fields }}
-		{{.Field }}: {{ .Value }}
+		{{.Field }}: {{ .Value }},
 {{- end }}
 	}
 }
