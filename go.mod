@@ -1,4 +1,4 @@
-module gen-clean-wire
+module github.com/appeanix/gen-clean-wire
 
 go 1.17
 
