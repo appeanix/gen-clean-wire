@@ -37,7 +37,7 @@ func ServeRpcServices() {
 
 {{ range .RpcServices }}
 	handler.E.Group(rpc.{{.EndpointPath}}).POST("*", func(c v4.Context) error {
-		rpc.New{{.Name}}(
+		rpc.{{.Name}}(
 			rpc.{{.EntityServiceRpc}}{UseCase: {{.NewEntityUseCase}}(handler.GetAppContext(c))},
 			&twirp.ServerHooks{ResponseSent: func(ctx context.Context) {
 				c.Response().Flush()
