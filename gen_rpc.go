@@ -25,6 +25,9 @@ package wire
 {{- if gt (len .RpcServices) 0 }}
 import (
 	"context"
+	"errors"
+	"strings"
+	"{{.Project}}/domain"
 	v4 "github.com/labstack/echo/v4"
 	twirp "github.com/twitchtv/twirp"
 	rpc "{{.Project}}/internal/api/gen/{{.RpcPackage}}"
@@ -32,21 +35,42 @@ import (
 )
 {{- end }}
 
-
 func ServeRpcServices() {
+{{- range .RpcServices }}
+	serve{{.EntityServiceRpc}}()
+{{- end }}
+}
 
 {{ range .RpcServices }}
-	handler.E.Group(rpc.{{.EndpointPath}}).POST("*", func(c v4.Context) error {
+func serve{{.EntityServiceRpc}}() {
+
+	prefix := strings.Replace(rpc.{{.EndpointPath}}, "/twirp", ServicePathPrefix, 1)
+
+	handler.E.Group(prefix).POST("*", func(c v4.Context) error {
 		rpc.{{.Name}}(
 			rpc.{{.EntityServiceRpc}}{UseCase: {{.NewEntityUseCase}}(handler.GetAppContext(c))},
-			&twirp.ServerHooks{ResponseSent: func(ctx context.Context) {
-				c.Response().Flush()
-			}},
+			twirp.WithServerPathPrefix(ServicePathPrefix),
+			twirp.WithServerHooks(newEchoHook(c)),
 		).ServeHTTP(c.Response().Writer, c.Request())
+
 		return nil
 	})
+}
 {{ end }}
 
+// Twirp hook to log errors to stdout in the service
+func newEchoHook(c v4.Context) *twirp.ServerHooks {
+    return &twirp.ServerHooks{
+        Error: func(ctx context.Context, twerr twirp.Error) context.Context {
+			originalErr := errors.Unwrap(twerr)
+			var internal string
+			if domainErr, ok := originalErr.(domain.Error); ok {
+				internal = domainErr.Internal
+			}
+			handler.WriteErrorLog(c, originalErr, internal)
+            return ctx
+        },
+    }
 }
 `
 
@@ -96,7 +120,7 @@ func genRpc() {
 			RpcPackage: rpcPkg,
 		}
 
-		// i.e. `NewAccountServiceServer`` becomes `Account`
+		// i.e. `NewAccountServiceServer` becomes `Account`
 		var entity = strings.Replace(
 			strings.Replace(rpcServiceName, newPrefix, "", 1),
 			serviceServerSuffix, "", 1,
