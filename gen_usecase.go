@@ -103,7 +103,7 @@ func genUseCases() {
 			} else if fieldName == queryAdapter {
 				useCase.Fields = append(useCase.Fields, UseCaseFieldMeta{
 					Field: queryAdapter,
-					Value: "repo.QueryRepo",
+					Value: "repo.QueryRepo{}",
 				})
 				meta.ORM = true
 
