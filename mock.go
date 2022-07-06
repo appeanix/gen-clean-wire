@@ -3,6 +3,7 @@ package main
 type MockRule struct {
 	MockEntityAdapter interface{}
 	OtherAdapter      interface{}
+	OtherRule         interface{}
 }
 
 type MockEntityRepo struct {

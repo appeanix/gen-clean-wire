@@ -55,6 +55,7 @@ func new{{.Name}}(appDB *dborm.DB, context *handler.AppContext) rule.{{ .Name }}
 const (
 	entityAdapterSuffix = "EntityAdapter"
 	adapterSuffix       = "Adapter"
+	embeddedRuleSuffix  = "Rule"
 )
 
 func genRules() {
@@ -102,6 +103,11 @@ func genRules() {
 				})
 				meta.ORM = true
 
+			} else if strings.HasSuffix(fieldName, embeddedRuleSuffix) {
+				rule.Fields = append(rule.Fields, RuleFieldMeta{
+					Field: fieldName,
+					Value: fmt.Sprintf("new%s(context.AppDB, context)", fieldName),
+				})
 			} else if strings.HasSuffix(fieldName, adapterSuffix) {
 				// write custom wire extension function
 				rule.Fields = append(rule.Fields, RuleFieldMeta{
