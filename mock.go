@@ -10,9 +10,10 @@ type MockEntityRepo struct {
 }
 
 type MockUseCase struct {
-	MockRuler    interface{}
-	DBAdapter    interface{}
-	QueryAdapter interface{}
+	MockRuler     interface{}
+	DBAdapter     interface{}
+	QueryAdapter  interface{}
+	CommonAdapter interface{}
 }
 
 func NewMockServiceServer() {

@@ -48,6 +48,7 @@ const (
 	dbAdapter      = "DBAdapter"
 	queryAdapter   = "QueryAdapter"
 	contextAdapter = "ContextAdapter"
+	commonAdapter  = "Adapter"
 )
 
 func genUseCases() {
@@ -111,6 +112,13 @@ func genUseCases() {
 				useCase.Fields = append(useCase.Fields, UseCaseFieldMeta{
 					Field: contextAdapter,
 					Value: "context",
+				})
+
+			} else if strings.HasSuffix(fieldName, adapterSuffix) {
+				// write custom wire extension function
+				useCase.Fields = append(useCase.Fields, UseCaseFieldMeta{
+					Field: fieldName,
+					Value: fmt.Sprintf("new%s%s(context)", usecaseName, fieldName),
 				})
 			}
 		}
